@@ -2,6 +2,7 @@ package dev.nivesh.productservice.services;
 
 import dev.nivesh.productservice.dtos.FakeStoreProductDto;
 import dev.nivesh.productservice.dtos.GenericProductDto;
+import dev.nivesh.productservice.exceptions.NotFoundException;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -42,15 +43,17 @@ public class FakeStoreProductService implements ProductService{
         return response.getBody();
     }
     @Override
-    public GenericProductDto getProductById(Long id) {
+    public GenericProductDto getProductById(Long id) throws NotFoundException {
         RestTemplate restTemplate = restTemplateBuilder.build();
         ResponseEntity<FakeStoreProductDto> response =
                 restTemplate.getForEntity(specificProductRequestUrl, FakeStoreProductDto.class, id);
         // if there are other variable also in the url we can add one by one
         FakeStoreProductDto fakeStoreProductDto = response.getBody();
-
 //        response.getStatusCode()
 //        return "Here is the Product id: " + id;
+        if(fakeStoreProductDto== null){
+            throw new NotFoundException("Product with id: " + id + " doesn't exist.");
+        }
         return convertFakeStoreProdIntoGenericProd(fakeStoreProductDto);
     }
 
@@ -75,7 +78,7 @@ public class FakeStoreProductService implements ProductService{
     }
 
     @Override
-    public GenericProductDto deleteProduct(Long id) {
+    public GenericProductDto deleteProduct(Long id) throws NotFoundException {
         RestTemplate restTemplate = restTemplateBuilder.build();
 
         RequestCallback requestCallback = restTemplate.acceptHeaderRequestCallback(FakeStoreProductDto.class);
@@ -83,7 +86,9 @@ public class FakeStoreProductService implements ProductService{
         ResponseEntity<FakeStoreProductDto> response = restTemplate.execute(specificProductRequestUrl, HttpMethod.DELETE, requestCallback, responseExtractor, id);
 
         FakeStoreProductDto fakeStoreProductDto = response.getBody();
-
+        if(fakeStoreProductDto== null){
+            throw new NotFoundException("Product with id: " + id + "doesn't exist.");
+        }
         return convertFakeStoreProdIntoGenericProd(fakeStoreProductDto);
 
     }

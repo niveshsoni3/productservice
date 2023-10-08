@@ -1,6 +1,8 @@
 package dev.nivesh.productservice.controllers;
 
+import dev.nivesh.productservice.dtos.ExceptionDto;
 import dev.nivesh.productservice.dtos.GenericProductDto;
+import dev.nivesh.productservice.exceptions.NotFoundException;
 import dev.nivesh.productservice.services.ProductService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
@@ -36,13 +38,13 @@ public class ProductController {
     }
 
     @GetMapping("{id}")
-    public GenericProductDto getProductById(@PathVariable("id") Long id){
+    public GenericProductDto getProductById(@PathVariable("id") Long id) throws NotFoundException {
         return productService.getProductById(id);
         //return "Here is the Product id: " + id;
     }
 
     @DeleteMapping("{id}")
-    public ResponseEntity<GenericProductDto> deleteProductById(@PathVariable("id") Long id){
+    public ResponseEntity<GenericProductDto> deleteProductById(@PathVariable("id") Long id) throws NotFoundException {
         // This is how status code can be manually set by server
         ResponseEntity<GenericProductDto> response =
                 new ResponseEntity<>(productService.deleteProduct(id), HttpStatus.OK);
@@ -61,5 +63,6 @@ public class ProductController {
     public GenericProductDto updateProductById(@PathVariable("id") Long id, @RequestBody GenericProductDto product){
         return productService.updateProductById(id, product);
     }
+
 
 }
