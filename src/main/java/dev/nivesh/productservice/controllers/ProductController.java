@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/products")
@@ -20,7 +21,7 @@ public class ProductController {
     private ProductService productService;
 
     // constructor injection
-    public ProductController(@Qualifier("fakeStoreProductService") ProductService productService){
+    public ProductController(@Qualifier("selfProductServiceImp") ProductService productService){
         this.productService = productService;
     }
     //setter injection
@@ -29,7 +30,7 @@ public class ProductController {
 //        this.productService = productService;
 //    }
     @GetMapping("")
-    public List<GenericProductDto> getAllProducts(){
+    public List<GenericProductDto> getAllProducts() throws NotFoundException {
         return productService.getAllProducts();
 //        return List.of(
 //                new GenericProductDto(),
@@ -38,13 +39,13 @@ public class ProductController {
     }
 
     @GetMapping("{id}")
-    public GenericProductDto getProductById(@PathVariable("id") Long id) throws NotFoundException {
+    public GenericProductDto getProductById(@PathVariable("id") UUID id) throws NotFoundException {
         return productService.getProductById(id);
         //return "Here is the Product id: " + id;
     }
 
     @DeleteMapping("{id}")
-    public ResponseEntity<GenericProductDto> deleteProductById(@PathVariable("id") Long id) throws NotFoundException {
+    public ResponseEntity<GenericProductDto> deleteProductById(@PathVariable("id") UUID id) throws NotFoundException {
         // This is how status code can be manually set by server
         ResponseEntity<GenericProductDto> response =
                 new ResponseEntity<>(productService.deleteProduct(id), HttpStatus.OK);
@@ -60,7 +61,7 @@ public class ProductController {
     }
 
     @PutMapping("{id}")
-    public GenericProductDto updateProductById(@PathVariable("id") Long id, @RequestBody GenericProductDto product){
+    public GenericProductDto updateProductById(@PathVariable("id") UUID id, @RequestBody GenericProductDto product) throws NotFoundException {
         return productService.updateProductById(id, product);
     }
 

@@ -13,6 +13,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service("fakeStoreProductService")
 public class FakeStoreProductService implements ProductService{
@@ -42,8 +43,9 @@ public class FakeStoreProductService implements ProductService{
                 restTemplate.postForEntity(productRequestsBaseUrl, product, GenericProductDto.class);
         return response.getBody();
     }
-    @Override
-    public GenericProductDto getProductById(Long id) throws NotFoundException {
+    @Override//Parameter should have Long id instead of UUID id, I did it bcoz
+    //self product service use UUID
+    public GenericProductDto getProductById(UUID id) throws NotFoundException {
         RestTemplate restTemplate = restTemplateBuilder.build();
         ResponseEntity<FakeStoreProductDto> response =
                 restTemplate.getForEntity(specificProductRequestUrl, FakeStoreProductDto.class, id);
@@ -58,7 +60,7 @@ public class FakeStoreProductService implements ProductService{
     }
 
     @Override
-    public List<GenericProductDto> getAllProducts() {
+    public List<GenericProductDto> getAllProducts() throws NotFoundException {
         RestTemplate restTemplate = restTemplateBuilder.build();
         ResponseEntity<FakeStoreProductDto[]> response =
                 restTemplate.getForEntity(productRequestsBaseUrl, FakeStoreProductDto[].class );
@@ -74,11 +76,14 @@ public class FakeStoreProductService implements ProductService{
 //            product.setCategory(fakeStoreProductDto.getCategory());
             answer.add(convertFakeStoreProdIntoGenericProd(fakeStoreProductDto));
         }
+        if(answer == null){
+            throw new NotFoundException("Empty Product");
+        }
         return answer;
     }
 
-    @Override
-    public GenericProductDto deleteProduct(Long id) throws NotFoundException {
+    @Override//changed Long id to UUID id
+    public GenericProductDto deleteProduct(UUID id) throws NotFoundException {
         RestTemplate restTemplate = restTemplateBuilder.build();
 
         RequestCallback requestCallback = restTemplate.acceptHeaderRequestCallback(FakeStoreProductDto.class);
@@ -93,8 +98,8 @@ public class FakeStoreProductService implements ProductService{
 
     }
 
-    @Override
-    public GenericProductDto updateProductById(Long id, GenericProductDto productDto) {
+    @Override//changed Long id to UUID id
+    public GenericProductDto updateProductById(UUID id, GenericProductDto productDto) throws NotFoundException {
         RestTemplate restTemplate = restTemplateBuilder.build();
 
         RequestCallback requestCallback = restTemplate.acceptHeaderRequestCallback(FakeStoreProductDto.class);
@@ -102,6 +107,9 @@ public class FakeStoreProductService implements ProductService{
         ResponseEntity<FakeStoreProductDto> response = restTemplate.execute(specificProductRequestUrl, HttpMethod.PUT, requestCallback, responseExtractor, id, productDto);
 
         FakeStoreProductDto fakeStoreProductDto = response.getBody();
+        if(fakeStoreProductDto== null){
+            throw new NotFoundException("Product with id: " + id + "doesn't exist.");
+        }
         return convertFakeStoreProdIntoGenericProd(fakeStoreProductDto);
     }
 }
